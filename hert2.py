@@ -6,6 +6,8 @@
 # recordings to the queue, and the websocket client would be sending the
 # recordings to the speech to text service
 
+#test
+
 import pyaudio
 from ibm_watson import SpeechToTextV1
 from ibm_watson.websocket import RecognizeCallback, AudioSource
