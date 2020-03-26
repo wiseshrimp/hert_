@@ -6,7 +6,6 @@
 # recordings to the queue, and the websocket client would be sending the
 # recordings to the speech to text service
 
-#test
 
 import pyaudio
 from ibm_watson import SpeechToTextV1
@@ -14,7 +13,31 @@ from ibm_watson.websocket import RecognizeCallback, AudioSource
 from threading import Thread
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
-
+import time
+import wiringpi
+ 
+# use 'GPIO naming'
+wiringpi.wiringPiSetupGpio()
+ 
+# set #18 to be a PWM output
+wiringpi.pinMode(18, wiringpi.GPIO.PWM_OUTPUT)
+ 
+# set the PWM mode to milliseconds stype
+wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
+ 
+# divide down clock
+wiringpi.pwmSetClock(192)
+wiringpi.pwmSetRange(2000)
+ 
+delay_period = 0.01
+ 
+while True:
+        for pulse in range(50, 250, 1):
+                wiringpi.pwmWrite(18, pulse)
+                time.sleep(delay_period)
+        for pulse in range(250, 50, -1):
+                wiringpi.pwmWrite(18, pulse)
+                time.sleep(delay_period)
 keywords_list = ['sorry', 'dumb']
 
 try:
