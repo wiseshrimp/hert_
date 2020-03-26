@@ -91,7 +91,7 @@ def recognize_using_weboscket(*args):
 # Variables for recording the speech
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 44100
+RATE = 48000
 
 # define callback for pyaudio to store the recording in queue
 def pyaudio_callback(in_data, frame_count, time_info, status):
@@ -136,7 +136,7 @@ stream = audio.open(
     rate=RATE,
     input=True,
     frames_per_buffer=CHUNK,
-    input_device_index=1,
+    input_device_index=2,
     stream_callback=pyaudio_callback,
     start=False
 )
