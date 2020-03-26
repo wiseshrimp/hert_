@@ -15,6 +15,8 @@ from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
 import time
 import wiringpi
+
+SECRET=
  
 # use 'GPIO naming'
 wiringpi.wiringPiSetupGpio()
@@ -31,13 +33,13 @@ wiringpi.pwmSetRange(2000)
  
 delay_period = 0.01
  
-while True:
-        for pulse in range(50, 250, 1):
-                wiringpi.pwmWrite(18, pulse)
-                time.sleep(delay_period)
-        for pulse in range(250, 50, -1):
-                wiringpi.pwmWrite(18, pulse)
-                time.sleep(delay_period)
+# while True:
+#         for pulse in range(50, 250, 1):
+#                 wiringpi.pwmWrite(18, pulse)
+#                 time.sleep(delay_period)
+#         for pulse in range(250, 50, -1):
+#                 wiringpi.pwmWrite(18, pulse)
+#                 time.sleep(delay_period)
 keywords_list = ['sorry', 'dumb']
 
 try:
@@ -95,6 +97,10 @@ class MyRecognizeCallback(RecognizeCallback):
             for keyword in keywords_list:
                 if keyword in text:
                     print('YES: ', keyword)
+                    wiringpi.pwmWrite(18, 100)
+                    time.sleep(delay_period)
+                    wiringpi.pwmWrite(18, 0)
+                    
                     # send message to GPIO
             print(text)
 
