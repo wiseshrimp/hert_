@@ -13,25 +13,15 @@ from ibm_watson.websocket import RecognizeCallback, AudioSource
 from threading import Thread
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
-import time
-import wiringpi
+import RPi.GPIO as GPIO
 
 SECRET=
- 
-# use 'GPIO naming'
-wiringpi.wiringPiSetupGpio()
- 
-# set #18 to be a PWM output
-wiringpi.pinMode(18, wiringpi.GPIO.PWM_OUTPUT)
- 
-# set the PWM mode to milliseconds stype
-wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
- 
-# divide down clock
-wiringpi.pwmSetClock(192)
-wiringpi.pwmSetRange(2000)
- 
-delay_period = 0.01
+
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(11, GPIO.OUT)
+pwm = GPIO.PWM(11, 50)
+pwm.start(5)
  
 # while True:
 #         for pulse in range(50, 250, 1):
@@ -97,10 +87,6 @@ class MyRecognizeCallback(RecognizeCallback):
             for keyword in keywords_list:
                 if keyword in text:
                     print('YES: ', keyword)
-                    wiringpi.pwmWrite(18, 100)
-                    time.sleep(delay_period)
-                    wiringpi.pwmWrite(18, 0)
-                    
                     # send message to GPIO
             print(text)
 
