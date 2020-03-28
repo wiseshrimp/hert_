@@ -12,20 +12,31 @@ from ibm_watson import SpeechToTextV1
 from ibm_watson.websocket import RecognizeCallback, AudioSource
 from threading import Thread
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-
+try:
+    from Queue import Queue, Full
+except ImportError:
+    from queue import Queue, Full
 import RPi.GPIO as GPIO
 from time import sleep
 
-SECRET=
+SECRET = ''
+SERVO_PIN = 12
+KEYWORDS_LIST = ['sorry', 'dumb', 'did that make sense', 'i just', 'i\'m no expert', 'i think', 'i feel like', 'i\'m not very good', 'i am not very good']
+CHUNK = 1024
+BUF_MAX_SIZE = CHUNK * 10
+q = Queue(maxsize=int(round(BUF_MAX_SIZE / CHUNK)))
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 48000
 
+# GPIO Setup
+def setup_servo():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(SERVO_PIN, GPIO.OUT)
+    pwm = GPIO.PWM(SERVO_PIN, 50)
+    pwm.start(0)
 
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(12, GPIO.OUT)
-pwm = GPIO.PWM(12, 50)
-pwm.start(0) # start with 0 duty cycle so it doesn't set angles on startup
-
-def setAngle(angle):
+def set_angle(angle):
     duty = angle / 18 + 2
     GPIO.output(12, True)
     pwm.ChangeDutyCycle(duty)
@@ -33,40 +44,13 @@ def setAngle(angle):
     GPIO.output(12, False)
     pwm.ChangeDutyCycle(0)
 
-setAngle(0)
+setup_servo()
+set_angle(0)
 
-# while True:
-#         for pulse in range(50, 250, 1):
-#                 wiringpi.pwmWrite(18, pulse)
-#                 time.sleep(delay_period)
-#         for pulse in range(250, 50, -1):
-#                 wiringpi.pwmWrite(18, pulse)
-#                 time.sleep(delay_period)
-keywords_list = ['sorry', 'dumb', 'did that make sense', 'i just', 'i\'m no expert', 'i think', 'i feel like', 'i\'m not very good', 'i am not very good']
-
-try:
-    from Queue import Queue, Full
-except ImportError:
-    from queue import Queue, Full
-
-###############################################
-#### Initalize queue to store the recordings ##
-###############################################
-CHUNK = 1024
-# Note: It will discard if the websocket client can't consumme fast enough
-# So, increase the max size as per your choice
-BUF_MAX_SIZE = CHUNK * 10
-# Buffer to store audio
-q = Queue(maxsize=int(round(BUF_MAX_SIZE / CHUNK)))
-
-# Create an instance of AudioSource
+# Audio setup
 audio_source = AudioSource(q, True, True)
 
-###############################################
-#### Prepare Speech to Text Ser vice ########
-###############################################
-
-# initialize speech to text service
+# Watson setup
 authenticator = IAMAuthenticator(SECRET)
 speech_to_text = SpeechToTextV1(authenticator=authenticator)
 
@@ -96,11 +80,11 @@ class MyRecognizeCallback(RecognizeCallback):
     def on_data(self, data):
         if (data['results'][0]['final']): # if end of sentence
             text = data['results'][0]['alternatives'][0]['transcript'].lower()
-            for keyword in keywords_list:
+            for keyword in KEYWORDS_LIST:
                 if keyword in text:
                     print('YES: ', keyword)
-                    setAngle(180)
-                    setAngle(0)
+                    set_angle(180)
+                    set_angle(0)
                     # send message to GPIO
             print(text)
 
@@ -115,14 +99,6 @@ def recognize_using_weboscket(*args):
                                              recognize_callback=mycallback,
                                              interim_results=True)
 
-###############################################
-#### Prepare the for recording using Pyaudio ##
-###############################################
-
-# Variables for recording the speech
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 48000
 
 # define callback for pyaudio to store the recording in queue
 def pyaudio_callback(in_data, frame_count, time_info, status):
