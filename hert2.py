@@ -19,6 +19,7 @@ from time import sleep
 SECRET=
 
 
+
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(12, GPIO.OUT)
 pwm = GPIO.PWM(12, 50)
@@ -33,8 +34,7 @@ def setAngle(angle):
     pwm.ChangeDutyCycle(0)
 
 setAngle(0)
-setAngle(180)
- 
+
 # while True:
 #         for pulse in range(50, 250, 1):
 #                 wiringpi.pwmWrite(18, pulse)
@@ -42,7 +42,7 @@ setAngle(180)
 #         for pulse in range(250, 50, -1):
 #                 wiringpi.pwmWrite(18, pulse)
 #                 time.sleep(delay_period)
-keywords_list = ['sorry', 'dumb']
+keywords_list = ['sorry', 'dumb', 'did that make sense', 'i just', 'i\'m no expert', 'i think', 'i feel like', 'i\'m not very good', 'i am not very good']
 
 try:
     from Queue import Queue, Full
@@ -99,6 +99,8 @@ class MyRecognizeCallback(RecognizeCallback):
             for keyword in keywords_list:
                 if keyword in text:
                     print('YES: ', keyword)
+                    setAngle(180)
+                    setAngle(0)
                     # send message to GPIO
             print(text)
 
@@ -132,8 +134,6 @@ def pyaudio_callback(in_data, frame_count, time_info, status):
 
 # instantiate pyaudio
 audio = pyaudio.PyAudio()
-
-print("Channels = "+str(audio.get_device_info_by_index(input_device_index).get('channels')))
 
 def list_devices():
     """List all available microphone devices."""
