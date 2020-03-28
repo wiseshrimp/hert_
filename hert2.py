@@ -14,14 +14,26 @@ from threading import Thread
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
 import RPi.GPIO as GPIO
+from time import sleep
 
 SECRET=
 
 
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(11, GPIO.OUT)
-pwm = GPIO.PWM(11, 50)
-pwm.start(5)
+GPIO.setup(12, GPIO.OUT)
+pwm = GPIO.PWM(12, 50)
+pwm.start(0) # start with 0 duty cycle so it doesn't set angles on startup
+
+def setAngle(angle):
+    duty = angle / 18 + 2
+    GPIO.output(12, True)
+    pwm.ChangeDutyCycle(duty)
+    sleep(1)
+    GPIO.output(12, False)
+    pwm.ChangeDutyCycle(0)
+
+setAngle(0)
+setAngle(180)
  
 # while True:
 #         for pulse in range(50, 250, 1):
