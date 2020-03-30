@@ -19,7 +19,6 @@ except ImportError:
 import RPi.GPIO as GPIO
 from time import sleep
 
-SECRET = ''
 SERVO_PIN = 12
 KEYWORDS_LIST = ['sorry', 'dumb', 'did that make sense', 'i just', 'i\'m no expert', 'i think', 'i feel like', 'i\'m not very good', 'i am not very good']
 CHUNK = 1024
@@ -51,16 +50,13 @@ set_angle(0)
 audio_source = AudioSource(q, True, True)
 
 # Watson setup
-authenticator = IAMAuthenticator(SECRET)
+authenticator = IAMAuthenticator(API_KEY)
 speech_to_text = SpeechToTextV1(authenticator=authenticator)
 
 # define callback for the speech to text service
 class MyRecognizeCallback(RecognizeCallback):
     def __init__(self):
         RecognizeCallback.__init__(self)
-
-    # def on_transcription(self, transcript):
-    #     print(transcript)
 
     def on_connected(self):
         print('Connection was successful')
@@ -74,19 +70,13 @@ class MyRecognizeCallback(RecognizeCallback):
     def on_listening(self):
         print('Service is listening')
 
-    # def on_hypothesis(self, hypothesis):
-    #     print(hypothesis)
-
     def on_data(self, data):
         if (data['results'][0]['final']): # if end of sentence
             text = data['results'][0]['alternatives'][0]['transcript'].lower()
             for keyword in KEYWORDS_LIST:
                 if keyword in text:
-                    print('YES: ', keyword)
                     set_angle(180)
                     set_angle(0)
-                    # send message to GPIO
-            print(text)
 
     def on_close(self):
         print("Connection closed")
@@ -145,10 +135,6 @@ stream = audio.open(
     stream_callback=pyaudio_callback,
     start=False
 )
-
-#########################################################################
-#### Start the recording and start service to recognize the stream ######
-#########################################################################
 
 print("Enter CTRL+C to end recording...")
 stream.start_stream()
